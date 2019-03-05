@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+import copy 
 
-# matrix rotation counterclock wise
+# matrix rotations counterclock wise
+def rotate_matrix_0(m):
+	return(m)
 def rotate_matrix_90(m):
     return [[m[j][i] for j in range(len(m))] for i in range(len(m[0])-1,-1,-1)]
 def rotate_matrix_180(m):
@@ -53,38 +56,87 @@ def read_blocks(file_path, H, W):
 
 	return(tetris_board, tetris_pieces)
 
-def after_deleting_empty_rows(tetris_board, tetris_piece, H, W):
-	h = len(tetris_piece)
-	w = len(tetris_piece[0])
-	max_hw = max(h, w)
-
-	# del l[0] is for removing first row
-	# all(x == 0 for x in v) for checking if row is all 0
-	# list.insert(index, elem) 
- 
+def detecting_empty_rows(tetris_board, H, W):
+	num_of_empty = 0 
 	for i in range(0, H):
 		if(all(x == 0 for x in tetris_board[i]) == True):
-			del tetris_board[0]
+			num_of_empty = num_of_empty + 1
+		else:
+			return num_of_empty	
 
-	for i in range(0, max_hw):
-		tetris_board.insert(0, )
+def no_collisions(tetris_board, tetris_piece, row, column):
+	piece_height = len(tetris_piece)
+	piece_width = len(tetris_piece[0]) 
 
+	ind = True
 
+	for h in range(0, piece_height):
+		for w in range(0, piece_width):	
+			if((tetris_piece[h][w] == 1 and tetris_board[row+h][column+w] == 1)):
+					ind = False
+	return ind
 
+def can_go_down(board, piece, i, j):
+	ind = False
 
-	return result
+	if(no_collisions(board, piece, i+1, j) and i < 20):
+		ind = True
 
-def check_collision(tetris_board, tetris_piece, row, column):
+	return(ind)
+
+def can_go_up(board, piece, i, j):
+	ind = False
+
+	if(no_collisions(board, piece, i-1, j) and i > 0):
+		ind = True
+
+	return(ind)
+
+def top(board, piece, i, j):
+	br = i
+	while(br > 0):
+		if(can_go_up(board, piece, br, j)):
+			br = br - 1
+		else:
+			return False
+
+	return True
+
+def num_of_occupied_rows(tetris_board, H):
+	r = 0
+	for i in range(0, H):
+		if(all(x == 1 for x in tetris_board[i]) == True):
+			r = r + 1			
+	return(r)
+
+def is_valid(tetris_board, tetris_piece, H, W):
+	piece_height = len(tetris_piece)
 	piece_width = len(tetris_piece[0])
-	piece_height = len(tetris_piece) 
 
-	for w in range(0, piece_width-1):
-		for h in range(0, piece_height-1):
-			if(tetris_piece[w][h] == 1):
-				if(tetris_board[row+w][column+h]) == 1:
-					return True
+	score = 0
+	top_left_i = 0
+	top_left_j = 0
 
-	return False
+	for i in range(0, H):
+		if (i <= (H - piece_height)):
+			for j in range(0, W):
+				if (j <= (W - piece_width)):
+					if(no_collisions(tetris_board, tetris_piece, i, j)):
+						new_board = copy.deepcopy(tetris_board)
+						for k in range(i, i + piece_height):
+							for l in range(j, j + piece_width):
+								if(new_board[k][l] == 0):
+									new_board[k][l] = tetris_piece[k-i][l-j]			
+						if (can_go_down(tetris_board, tetris_piece, i, j) == False):
+							if(top(tetris_board, tetris_piece, i, j) == True): 
+								new_score = num_of_occupied_rows(new_board, H)
+								if(new_score >= score):
+									score = new_score	
+									top_left_i = i
+									top_left_j = j			
+						
+	#display_matrix(tetris_piece)				
+	return(score, top_left_i, top_left_j)
 
 if __name__ == "__main__":
 	H = 20 # board height
@@ -94,13 +146,16 @@ if __name__ == "__main__":
 	file_path = '/Users/mandja96/Downloads/public/set/1.txt'
 	(tetris_board, tetris_pieces) = read_blocks(file_path, H, W)
 
+	print(tetris_pieces)
 	print("Tetris board:")
 	display_matrix(tetris_board)
 	print()
+
 	print("Tetris pieces:")
 	for k in tetris_pieces:
 		display_matrix(tetris_pieces[k])
 		print()
 
-
-	print(check_collision(tetris_board, tetris_pieces[0], 12, 0))
+	tmp = rotate_matrix_180(tetris_pieces[0])
+	print(is_valid(tetris_board, tmp, H, W))
+	
