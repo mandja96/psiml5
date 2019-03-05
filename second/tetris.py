@@ -2,8 +2,6 @@
 import copy 
 
 # matrix rotations counterclock wise
-def rotate_matrix_0(m):
-	return(m)
 def rotate_matrix_90(m):
     return [[m[j][i] for j in range(len(m))] for i in range(len(m[0])-1,-1,-1)]
 def rotate_matrix_180(m):
@@ -68,18 +66,24 @@ def no_collisions(tetris_board, tetris_piece, row, column):
 	piece_height = len(tetris_piece)
 	piece_width = len(tetris_piece[0]) 
 
+	if(row == 20 or column == 10):
+		return False
+
 	ind = True
 
 	for h in range(0, piece_height):
 		for w in range(0, piece_width):	
 			if((tetris_piece[h][w] == 1 and tetris_board[row+h][column+w] == 1)):
-					ind = False
+				ind = False
 	return ind
 
 def can_go_down(board, piece, i, j):
 	ind = False
 
-	if(no_collisions(board, piece, i+1, j) and i < 20):
+	if(i >= 20 - len(piece)):
+		ind = False
+
+	elif(no_collisions(board, piece, i+1, j) and i < 20):
 		ind = True
 
 	return(ind)
@@ -136,26 +140,71 @@ def is_valid(tetris_board, tetris_piece, H, W):
 									top_left_j = j			
 						
 	#display_matrix(tetris_piece)				
-	return(score, top_left_i, top_left_j)
+	return(score, top_left_j)
 
 if __name__ == "__main__":
 	H = 20 # board height
 	W = 10 # board width
 
 	file_path = input()
-	file_path = '/Users/mandja96/Downloads/public/set/1.txt'
+	#file_path = '/Users/mandja96/Downloads/public/set/10.txt'
 	(tetris_board, tetris_pieces) = read_blocks(file_path, H, W)
 
-	print(tetris_pieces)
-	print("Tetris board:")
-	display_matrix(tetris_board)
-	print()
+	# print(tetris_pieces)
+	# print("Tetris board:")
+	# display_matrix(tetris_board)
+	# print()
 
-	print("Tetris pieces:")
-	for k in tetris_pieces:
-		display_matrix(tetris_pieces[k])
-		print()
-
-	tmp = rotate_matrix_180(tetris_pieces[0])
-	print(is_valid(tetris_board, tmp, H, W))
+	# print("Tetris pieces:")
+	# for k in tetris_pieces:
+	# 	display_matrix(tetris_pieces[k])
+	# 	print()
 	
+
+	rotations = [0, 90, 180, 270]
+	max_score = -1
+	piece_number = -1
+	piece_degrees = -1
+	top_left = -1
+
+	for p in tetris_pieces:
+		for r in rotations:
+			if(r == 0):
+				tmp = tetris_pieces[p]
+				(score, top_left_j) = is_valid(tetris_board, tmp, H, W)
+				if score > max_score:
+					max_score = score
+					piece_number = p
+					piece_degrees = r
+					top_left = top_left_j
+			if(r == 90):
+				tmp = tetris_pieces[p]
+				tmp = rotate_matrix_90(tmp)
+				(score, top_left_j) = is_valid(tetris_board, tmp, H, W)
+				if score > max_score:
+					max_score = score
+					piece_number = p
+					piece_degrees = r
+					top_left = top_left_j
+
+			if(r == 180):
+				tmp = tetris_pieces[p]		
+				tmp = rotate_matrix_180(tmp)
+				(score, top_left_j) = is_valid(tetris_board, tmp, H, W)
+				if score > max_score:
+					max_score = score
+					piece_number = p
+					piece_degrees = r
+					top_left = top_left_j
+
+			if(r == 270):
+				tmp = tetris_pieces[p]				
+				tmp = rotate_matrix_270(tmp)
+				(score, top_left_j) = is_valid(tetris_board, tmp, H, W)
+				if score > max_score:
+					max_score = score
+					piece_number = p
+					piece_degrees = r
+					top_left = top_left_j
+
+print("{0} {1} {2}".format(piece_number, piece_degrees, top_left))
