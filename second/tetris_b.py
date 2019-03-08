@@ -364,7 +364,7 @@ if __name__ == "__main__":
 
 	best_l.reverse()
 	niz = clean_list(best_l)
-	#print(best_l)
+	print(best_l)
 
 	print("{0} {1} {2}".format(piece_number, piece_degrees, top_left))
 	print("{0} {1}".format(piece_number, piece_degrees), end='')
