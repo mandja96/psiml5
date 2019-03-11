@@ -127,5 +127,3 @@ if __name__ == "__main__":
 	task_1_print(result)
 	
 	read_sequence(file_path)	
-
-
